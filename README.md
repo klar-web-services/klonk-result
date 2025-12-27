@@ -4,6 +4,8 @@ A Proxy-based Result type for TypeScript.
 
 This library implements the Result pattern using ES6 Proxies. It allows property access and method calls to be forwarded directly to the wrapped value. If the result is a failure, these operations are intercepted and the error is propagated.
 
+Unlike implementations that rely on functional mapping (e.g. `.map()` or `.match()`) to interact with the wrapped value, this library leverages Proxies to forward calls directly to the underlying object. This approach eliminates the need to unwrap or map over the value for every operation, allowing you to write standard imperative code or method chains that automatically short-circuit on error.
+
 `klonk-result` powers the type-safe railway-oriented design of [Klonk](https://github.com/klar-web-services/klonk) and [Klonkworks](https://github.com/klar-web-services/klonkworks).
 
 ## Implementation Details
@@ -16,7 +18,7 @@ The `Result<T>` type is a union of `Ok<T>` and `Err<T>`. A Proxy intercepts oper
 ## Installation
 
 ```bash
-bun add @fkws/klonk-result
+bun add     @fkws/klonk-result
 npm install @fkws/klonk-result
 ```
 
