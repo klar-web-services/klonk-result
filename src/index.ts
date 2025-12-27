@@ -22,8 +22,6 @@ type Boxed<T> =
 
 /** Shared Result implementation + proxy membrane. */
 abstract class _ResultBase<T extends ResultValue> {
-  private static __proxyCache = new WeakMap<object, any>();
-
   abstract readonly success: boolean;
 
   isErr(): this is _Err<T> {
@@ -37,16 +35,14 @@ abstract class _ResultBase<T extends ResultValue> {
   abstract unwrap(): T;
 
   protected static __proxify<R extends _ResultBase<any>>(res: R): R {
-    const cached = _ResultBase.__proxyCache.get(res);
-    if (cached) return cached;
-
     const proxy = new Proxy(res, {
       get(target, prop, receiver) {
         // Avoid being treated like a Promise/thenable
         if (prop === "then") return undefined;
 
         // 1) Result members win (success / isOk / isErr / unwrap / error / throw ...)
-        if (prop in target) {
+        const RESULT_KEYS = ["success", "isOk", "isErr", "unwrap", "error", "throw"];
+        if (RESULT_KEYS.includes(prop as string)) {
           const v = Reflect.get(target as any, prop, target);
           return typeof v === "function" ? (v as AnyFn).bind(target) : v;
         }
@@ -73,25 +69,25 @@ abstract class _ResultBase<T extends ResultValue> {
 
       set(target, prop, value, receiver) {
         // Writes to Result itself if it owns the prop
-        if (prop in target) {
+        const RESULT_KEYS = ["success", "isOk", "isErr", "unwrap", "error", "throw"];
+        if (RESULT_KEYS.includes(prop as string)) {
           return Reflect.set(target as any, prop, value, target);
         }
 
         // Err can't be written-through to inner value
-        if (target.isErr()) return false;
+        if (target.isErr()) return true;
 
         const inner = target.unwrap() as any;
 
         // Primitives can't be meaningfully mutated through a proxy surface
         if (inner === null || (typeof inner !== "object" && typeof inner !== "function")) {
-          return false;
+          return true;
         }
 
         return Reflect.set(inner, prop, value, inner);
       },
     });
 
-    _ResultBase.__proxyCache.set(res, proxy);
     return proxy;
   }
 }
@@ -200,27 +196,10 @@ export const Result: {
   new <T extends ResultValue>(params: ResultParams<T>): Result<T>;
 } = class ResultCtor<T extends ResultValue> {
   constructor(params: ResultParams<T>) {
-    return (params.success
-      ? new _Ok(params.data)
-      : new _Err<T>(params.error)) as any;
+    if (params.success) {
+      return new _Ok(params.data) as any;
+    } else {
+      return new _Err<T>((params as { success: false; error: Error }).error) as any;
+    }
   }
 } as any;
-
-// Inline testing
-
-class A {
-    constructor(public aData: string) { }
-
-    changeData(newData: string): Result<A> {
-        if (newData === "causeError") {
-            return new Result({
-                success: false,
-                error: new Error("Cause error"),
-            });
-        }
-        return new Result({
-            success: true,
-            data: new A(newData),
-        });
-    }
-}
