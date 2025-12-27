@@ -3,7 +3,32 @@
   "version": "0.0.2",
   "module": "index.ts",
   "type": "module",
-  "private": true,
+  "private": false,
+  "description": "A Proxy-based Result type for TypeScript.",
+  "repository": "https://github.com/klar-web-services/klonk-result",
+  "homepage": "https://klonk.dev",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "FKWS (https://klonk.dev)",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "keywords": [
+    "result",
+    "typescript",
+    "proxy",
+    "railway-oriented",
+    "type-safe"
+  ],
   "devDependencies": {
     "@types/bun": "latest",
     "@vitest/coverage-v8": "^4.0.3",
