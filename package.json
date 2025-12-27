@@ -24,5 +24,8 @@
     "release:patch": "bun scripts/release.js patch",
     "release:minor": "bun scripts/release.js minor",
     "release:major": "bun scripts/release.js major"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
