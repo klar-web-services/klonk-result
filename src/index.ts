@@ -5,7 +5,7 @@ type ResultParams<T> =
 type AnyFn = (...args: any[]) => any;
 
 /** Values supported by this Result implementation (incl. primitives). */
-type ResultValue = object | string | number | boolean | bigint | symbol;
+type ResultValue = any;
 
 /**
  * For primitive Ok-values, we forward member access to the corresponding boxed wrapper
@@ -18,7 +18,7 @@ type Boxed<T> =
   T extends bigint ? BigInt :
   T extends symbol ? Symbol :
   T extends object ? T :
-  never;
+  {};
 
 /** Shared Result implementation + proxy membrane. */
 abstract class _ResultBase<T extends ResultValue> {
